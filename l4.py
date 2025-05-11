@@ -59,7 +59,7 @@ def stats(dur, chat_id):
                 "PacketsSent": total_sent,
                 "TimeElapsed": round(time.time() - start, 2)
             }
-            bot.send_message(chat_id, f"```json\n{json.dumps(status, indent=2)}\n```", parse_mode="Markdown")
+            bot.send_message(chat_id, f"```json\n{json.dumps(status, indent=2, ensure_ascii=False)}\n```", parse_mode="Markdown")
 
 def flood(ip, port, mode, concurrent, seconds, chat_id, username):
     global total_sent
@@ -72,7 +72,7 @@ def flood(ip, port, mode, concurrent, seconds, chat_id, username):
         "Duration": f"{seconds} seconds",
         "Threads": concurrent
     }
-    bot.send_message(chat_id, f"```json\n{json.dumps(start_info, indent=2)}\n```", parse_mode="Markdown")
+    bot.send_message(chat_id, f"```json\n{json.dumps(start_info, indent=2, ensure_ascii=False)}\n```", parse_mode="Markdown")
     flood_func = send_udp if mode == "udp" else send_tcp
     threading.Thread(target=stats, args=(seconds, chat_id), daemon=True).start()
     thread_pool = []
@@ -89,7 +89,7 @@ def flood(ip, port, mode, concurrent, seconds, chat_id, username):
         "Mode": mode.upper(),
         "TotalPackets": total_sent
     }
-    bot.send_message(chat_id, f"```json\n{json.dumps(end_info, indent=2)}\n```", parse_mode="Markdown")
+    bot.send_message(chat_id, f"```json\n{json.dumps(end_info, indent=2, ensure_ascii=False)}\n```", parse_mode="Markdown")
 
 @bot.message_handler(commands=['attack'])
 def attack_command(message):
@@ -127,7 +127,7 @@ def uptime_command(message):
             "Seconds": seconds
         }
     }
-    bot.reply_to(message, f"```json\n{json.dumps(uptime_info, indent=2)}\n```", parse_mode="Markdown")
+    bot.reply_to(message, f"```json\n{json.dumps(uptime_info, indent=2, ensure_ascii=False)}\n```", parse_mode="Markdown")
 
 @bot.message_handler(commands=['start'])
 def start_command(message):
@@ -140,7 +140,7 @@ def start_command(message):
             "/start": "Giới thiệu bot và danh sách lệnh"
         }
     }
-    bot.reply_to(message, f"```json\n{json.dumps(intro, indent=2)}\n```", parse_mode="Markdown")
+    bot.reply_to(message, f"```json\n{json.dumps(intro, indent=2, ensure_ascii=False)}\n```", parse_mode="Markdown")
 
 def run_bot():
     bot.polling()
