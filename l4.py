@@ -10,7 +10,7 @@ from datetime import datetime, timedelta
 
 total_sent = 0
 count_lock = threading.Lock()
-TOKEN = os.environ.get('TOKEN', '8186042947:AAH3yFUwAjhWSqHLBYzvJhNxb4LGap9Eap0')
+TOKEN = os.environ.get('TOKEN', '8186042947:AAESvUaSbZtVRB_EBJGWUpmARVsyWvXq2H8')
 bot = telebot.TeleBot(TOKEN)
 app = Flask(__name__)
 start_time = datetime.now()
