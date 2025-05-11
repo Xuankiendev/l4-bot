@@ -22,7 +22,7 @@ def home():
 def send_udp(ip, port, dur):
     global total_sent
     s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-    data = random._urandom(4096)
+    data = random._urandom(10240)
     timeout = time.time() + dur
     while time.time() < timeout:
         try:
@@ -35,7 +35,7 @@ def send_udp(ip, port, dur):
 def send_tcp(ip, port, dur):
     global total_sent
     timeout = time.time() + dur
-    data = random._urandom(4096)
+    data = random._urandom(10240)
     while time.time() < timeout:
         try:
             sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
